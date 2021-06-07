@@ -1,4 +1,4 @@
-const { SELECT_FILE_HASH, INSERT_HASH } = require("../constants/queries");
+const { SELECT_FILE_HASH, INSERT_HASH, SELECT_SETUP, UPDATE_SETUP } = require("../constants/queries");
 const { Client } = require('pg');
 
 const client = new Client({
@@ -17,6 +17,23 @@ const setupDatabase = async () => {
     }
 }
 
+const getPathStatus = async (path) => {
+    try {
+        const { rowCount } = await client.query(SELECT_SETUP, [path])
+        return rowCount > 0 ? true : false;
+    } catch (err) {
+        console.error("Setup path retrieve error", err);
+    }
+}
+
+const updatePathStatus = async (path) => {
+    try {
+        await client.query(UPDATE_SETUP, [path])
+    } catch (err) {
+        console.error("Setup path update error", err);
+    }
+}
+
 const getFileHash = async (fileName) => {
     try {
         const { rowCount, rows } = await client.query(SELECT_FILE_HASH, [fileName]);
@@ -26,7 +43,6 @@ const getFileHash = async (fileName) => {
     }
 }
 
-
 const insertFileHash = async (fileName, fileHash) => {
     try {
         await client.query(INSERT_HASH, [fileName, fileHash]);
@@ -35,4 +51,4 @@ const insertFileHash = async (fileName, fileHash) => {
     }
 }
 
-module.exports = { setupDatabase, getFileHash, insertFileHash }
+module.exports = { setupDatabase, getFileHash, insertFileHash, getPathStatus, updatePathStatus }
